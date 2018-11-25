@@ -52,6 +52,16 @@ def com_check(message):
     msg = "{}/{} {}:{}に{}が設定されています．".format(*date)
     return msg
 
+def com_bash(message):
+    message.content = receive_message('bash', message.content)
+    message.content = "'" + message.content + "'"
+    import subprocess, shlex
+    args =  shlex.split(message.content)
+    p = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout_data, stderr_data = p.communicate()
+    msg = stdout_data.decode('utf-8') + stderr_data.decode('utf-8')
+    return msg
+
 @client.event
 async def on_message(message):
     # we do not want the bot to reply to itself
@@ -71,6 +81,9 @@ async def on_message(message):
             await client.send_message(message.channel, msg)
         elif message.content.startswith('check'):
             msg = com_check(message)
+            await client.send_message(message.channel, msg)
+        elif message.content.startswith('bash'):
+            msg = com_bash(message)
             await client.send_message(message.channel, msg)
 
 
