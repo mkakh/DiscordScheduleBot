@@ -62,6 +62,15 @@ def com_bash(message):
     msg = stdout_data.decode('utf-8') + stderr_data.decode('utf-8')
     return msg
 
+def com_vote_start(ids):
+    with open('vote.dat', "w") as f:
+        f.write("{}".format(','.join(ids)))
+def com_vote_end():
+    with open('vote.dat', "r") as f:
+        ids = f.read().split(",")
+    return ids 
+    
+
 @client.event
 async def on_message(message):
     # we do not want the bot to reply to itself
@@ -85,6 +94,22 @@ async def on_message(message):
         elif message.content.startswith('bash'):
             msg = com_bash(message)
             await client.send_message(message.channel, msg)
+        elif message.content.startswith('vote_start'):
+            ids = []
+            for msg in ['月', '火', '水', '木', '金', '土', '日']:
+                new_message = await client.send_message(message.channel, msg)
+                await client.add_reaction(new_message, emoji='👍')
+                ids = ids + [new_message.id]
+                com_vote_start(ids)
+        elif message.content.startswith('vote_end'):
+            ids = com_vote_end()
+            strs = ['月', '火', '水', '木', '金', '土', '日']
+            msg = ''
+            for i in range(len(strs)):
+                get_message = await client.get_message(message.channel, ids[i])
+                votes = sum({react.emoji : react.count for react in get_message.reactions}.values())
+                msg = msg + strs[i] + ': ' + str(votes) + '\n'
+            new_message = await client.send_message(message.channel, msg)
 
 
 
