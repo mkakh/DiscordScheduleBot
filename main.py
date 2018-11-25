@@ -69,6 +69,9 @@ def com_vote_end():
     with open('vote.dat', "r") as f:
         ids = f.read().split(",")
     return ids 
+
+def com_help(message):
+    return "**一般権限**\nhello: 挨拶\ncheck: 日程確認\nhelp: ヘルプ\n\n**管理者権限**\nset: 日程セット\nbash: Bash\nvote_start: 曜日投票開始\nvote_end: 曜日投票集計"
     
 
 @client.event
@@ -77,7 +80,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     if not permitted(message.author):
-        print('PERMISSION_ERROR: {}'.format(message.author))
+        print('PERMISSION_DENIED: {}'.format(message.content))
         return
 
     if message.content.startswith(PREFIX):
@@ -85,31 +88,41 @@ async def on_message(message):
         if message.content.startswith('hello'):
             msg = com_hello(message)
             await client.send_message(message.channel, msg)
-        elif message.content.startswith('set'):
-            msg = com_set(message)
-            await client.send_message(message.channel, msg)
         elif message.content.startswith('check'):
             msg = com_check(message)
             await client.send_message(message.channel, msg)
-        elif message.content.startswith('bash'):
-            msg = com_bash(message)
+        elif message.content.startswith('help'):
+            msg = com_help(message)
             await client.send_message(message.channel, msg)
-        elif message.content.startswith('vote_start'):
-            ids = []
-            for msg in ['月', '火', '水', '木', '金', '土', '日']:
-                new_message = await client.send_message(message.channel, msg)
-                await client.add_reaction(new_message, emoji='👍')
-                ids = ids + [new_message.id]
-                com_vote_start(ids)
-        elif message.content.startswith('vote_end'):
-            ids = com_vote_end()
-            strs = ['月', '火', '水', '木', '金', '土', '日']
-            msg = ''
-            for i in range(len(strs)):
-                get_message = await client.get_message(message.channel, ids[i])
-                votes = sum({react.emoji : react.count for react in get_message.reactions}.values())
-                msg = msg + strs[i] + ': ' + str(votes) + '\n'
-            new_message = await client.send_message(message.channel, msg)
+        elif permitted(message.author):
+            if message.content.startswith('set'):
+                msg = com_set(message)
+                await client.send_message(message.channel, msg)
+            elif message.content.startswith('bash'):
+                msg = com_bash(message)
+                await client.send_message(message.channel, msg)
+            elif message.content.startswith('vote_start'):
+                ids = []
+                for msg in ['月', '火', '水', '木', '金', '土', '日']:
+                    new_message = await client.send_message(message.channel, msg)
+                    await client.add_reaction(new_message, emoji='👍')
+                    ids = ids + [new_message.id]
+                    com_vote_start(ids)
+            elif message.content.startswith('vote_end'):
+                ids = com_vote_end()
+                strs = ['月', '火', '水', '木', '金', '土', '日']
+                msg = ''
+                for i in range(len(strs)):
+                    get_message = await client.get_message(message.channel, ids[i])
+                    votes = sum({react.emoji : react.count for react in get_message.reactions}.values())
+                    msg = msg + strs[i] + ': ' + str(votes) + '\n'
+                #new_message = await client.send_message(message.channel, msg)
+                await client.send_message(message.channel, msg)
+            else:
+                await client.send_message(message.channel, "？？？")
+        else:
+            await client.send_message(message.channel, "？？？")
+                
 
 
 
