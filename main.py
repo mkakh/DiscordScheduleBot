@@ -87,10 +87,6 @@ async def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
-    if not permitted(message.author):
-        print('PERMISSION_DENIED: {}'.format(message.content))
-        return
-
     if message.content.startswith(PREFIX):
         message.content = receive_message(PREFIX, message.content)
         if message.content.startswith('hello'):
