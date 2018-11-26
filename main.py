@@ -83,7 +83,7 @@ async def com_vote_end(message):
     return msg
 
 def com_help(message):
-    return "**一般権限**\nhello: 挨拶\ncheck: 日程確認\nhelp: ヘルプ\n\n**管理者権限**\nset: 日程セット\nbash: Bash\nvote_start: 曜日投票開始\nvote_end: 曜日投票集計"
+    return "**一般権限**\n$hello: 挨拶\n$check: 日程確認\n$help: ヘルプ\n\n**管理者権限**\n$set: 日程セット\n$bash: Bash\n$vote_start: 曜日投票開始\n$vote_end: 曜日投票集計"
     
 
 @client.event
