@@ -5,7 +5,9 @@ import setting
 
 TOKEN = setting.token
 PREFIX='$'
-FILE_NAME = 'schedule.dat'
+SCH_FILE = '/usr/share/discord_bot/schedule.dat'
+VOTE_FILE = '/usr/share/discord_bot/vote.dat'
+
 
 client = discord.Client()
 
@@ -21,7 +23,7 @@ def write_schedule(M: int, D:int, h:int, m:int, message:str):
         if (1 <= M and M <= 31):
             if (0 <= h and h <= 23):
                 if (0 <= m and m <= 59):
-                    with open(FILE_NAME, "w") as f:
+                    with open(SCH_FILE, "w") as f:
                         f.write("{0:02},{1:02},{2:02},{3:02},{4}".format(M,D,h,m,message))
 
 def permitted(user : discord.member.Member):
@@ -42,7 +44,7 @@ def com_set(message):
     return msg
 
 def com_check(message):
-    with open(FILE_NAME, "r") as f:
+    with open(SCH_FILE, "r") as f:
         raw_date = f.read()
     date = raw_date.split(",")
     msg = "{}/{} {}:{}に{}が設定されています．".format(*date)
@@ -64,11 +66,11 @@ async def com_vote_start(message):
         new_message = await client.send_message(message.channel, msg)
         await client.add_reaction(new_message, emoji='👍')
         ids = ids + [new_message.id]
-    with open('vote.dat', "w") as f:
+    with open(VOTE_FILE, "w") as f:
         f.write("{}".format(','.join(ids)))
 
 async def com_vote_end(message):
-    with open('vote.dat', "r") as f:
+    with open(VOTE_FILE, "r") as f:
         ids = f.read().split(",")
     strs = ['月', '火', '水', '木', '金', '土', '日']
     msg = ''
