@@ -1,7 +1,7 @@
 # coding: utf-8
 import discord
-import setting
 from discord.ext import commands
+import setting
 
 TOKEN = setting.token
 PREFIX='$'
@@ -62,13 +62,25 @@ def com_bash(message):
     msg = stdout_data.decode('utf-8') + stderr_data.decode('utf-8')
     return msg
 
-def com_vote_start(ids):
+async def com_vote_start(message):
+    ids = []
+    for msg in ['月', '火', '水', '木', '金', '土', '日']:
+        new_message = await client.send_message(message.channel, msg)
+        await client.add_reaction(new_message, emoji='👍')
+        ids = ids + [new_message.id]
     with open('vote.dat', "w") as f:
         f.write("{}".format(','.join(ids)))
-def com_vote_end():
+
+async def com_vote_end(message):
     with open('vote.dat', "r") as f:
         ids = f.read().split(",")
-    return ids 
+    strs = ['月', '火', '水', '木', '金', '土', '日']
+    msg = ''
+    for i in range(len(strs)):
+        get_message = await client.get_message(message.channel, ids[i])
+        votes = sum({react.emoji : react.count for react in get_message.reactions}.values())-1
+        msg = msg + strs[i] + ': ' + str(votes) + '\n'
+    return msg
 
 def com_help(message):
     return "**一般権限**\nhello: 挨拶\ncheck: 日程確認\nhelp: ヘルプ\n\n**管理者権限**\nset: 日程セット\nbash: Bash\nvote_start: 曜日投票開始\nvote_end: 曜日投票集計"
@@ -102,21 +114,9 @@ async def on_message(message):
                 msg = com_bash(message)
                 await client.send_message(message.channel, msg)
             elif message.content.startswith('vote_start'):
-                ids = []
-                for msg in ['月', '火', '水', '木', '金', '土', '日']:
-                    new_message = await client.send_message(message.channel, msg)
-                    await client.add_reaction(new_message, emoji='👍')
-                    ids = ids + [new_message.id]
-                    com_vote_start(ids)
+                await com_vote_start(message)
             elif message.content.startswith('vote_end'):
-                ids = com_vote_end()
-                strs = ['月', '火', '水', '木', '金', '土', '日']
-                msg = ''
-                for i in range(len(strs)):
-                    get_message = await client.get_message(message.channel, ids[i])
-                    votes = sum({react.emoji : react.count for react in get_message.reactions}.values())
-                    msg = msg + strs[i] + ': ' + str(votes) + '\n'
-                #new_message = await client.send_message(message.channel, msg)
+                msg = await com_vote_end(message)
                 await client.send_message(message.channel, msg)
             else:
                 await client.send_message(message.channel, "？？？")
