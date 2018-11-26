@@ -1,3 +1,3 @@
 setting.py
-schedule.dat
+*.dat
 __pycache__
