@@ -29,10 +29,6 @@ def permitted(user : discord.member.Member):
     user = "{}".format(user)
     return (user in allow_users)
 
-def set_date(M: int, D:int, h:int, m:int, message:str):
-    with open(FILE_NAME, "a") as f:
-        f.write("{0:02},{1:02},{2:02},{3:02},{4}".format(M,D,h,m,message))
-
 def com_hello(message):
     msg = "{0.author.mention} :wave: Hello!".format(message)
     return msg
