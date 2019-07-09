@@ -7,6 +7,7 @@ TOKEN = setting.token
 PREFIX='$'
 SCH_FILE = '/usr/share/discord_bot/schedule.dat'
 VOTE_FILE = '/usr/share/discord_bot/vote.dat'
+YNVOTE_FILE = '/usr/share/discord_bot/ynvote.dat'
 
 
 client = discord.Client()
@@ -80,8 +81,28 @@ async def com_vote_end(message):
         msg = msg + strs[i] + ': ' + str(votes) + '\n'
     return msg
 
+async def com_ynvote_start(message):
+    ids = []
+    for msg in ['YES', 'NO']:
+        new_message = await client.send_message(message.channel, msg)
+        await client.add_reaction(new_message, emoji='👍')
+        ids = ids + [new_message.id]
+    with open(YNVOTE_FILE, "w") as f:
+        f.write("{}".format(','.join(ids)))
+
+async def com_ynvote_end(message):
+    with open(YNVOTE_FILE, "r") as f:
+        ids = f.read().split(",")
+    strs = ['YES', 'NO']
+    msg = ''
+    for i in range(len(strs)):
+        get_message = await client.get_message(message.channel, ids[i])
+        votes = sum({react.emoji : react.count for react in get_message.reactions}.values())-1
+        msg = msg + strs[i] + ': ' + str(votes) + '\n'
+    return msg
+
 def com_help(message):
-    return "**一般権限**\n$hello: 挨拶\n$check: 日程確認\n$help: ヘルプ\n\n**管理者権限**\n$set: 日程セット\n$bash: Bash\n$vote_start: 曜日投票開始\n$vote_end: 曜日投票集計"
+    return "**一般権限**\n$hello: 挨拶\n$check: 日程確認\n$help: ヘルプ\n\n**管理者権限**\n$set: 日程セット\n$bash: Bash\n$vote_start: 曜日投票開始\n$vote_end: 曜日投票集計\n$ynvote_start: YES/NO投票開始\n$ynvote_end: YES/NO投票集計"
     
 
 @client.event
@@ -111,6 +132,11 @@ async def on_message(message):
                 await com_vote_start(message)
             elif message.content.startswith('vote_end'):
                 msg = await com_vote_end(message)
+                await client.send_message(message.channel, msg)
+            elif message.content.startswith('ynvote_start'):
+                await com_ynvote_start(message)
+            elif message.content.startswith('ynvote_end'):
+                msg = await com_ynvote_end(message)
                 await client.send_message(message.channel, msg)
             else:
                 await client.send_message(message.channel, "？？？")
